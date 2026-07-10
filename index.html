@@ -88,7 +88,7 @@
     // Configurações do Funil de Anime
     const CONFIG = {
       variant: "anime",
-      checkoutUrl: "https://pay.lowify.com.br/checkout?product_id=wYlO9O",
+      checkoutUrl: "https://checkout.wiven.com.br/checkout/cmrfisd5v0r4201q4tin5k8jo?offer=j1kbs68",
       compatibilityScore: 98,
       resultPrice: "R$29,90",
       resultPriceOriginal: "R$49,97",
@@ -370,9 +370,8 @@
     };
 
     function renderVideoScreen() {
+      // Disparar pixel de Lead no início do vídeo
       fbq('track', 'Lead');
-      
-      const srcUrl = `https://scripts.converteai.net/41b085ac-d999-4a11-a0d5-ff849e26383e/players/6a39df41373e80a1b4f9ebda/v4/embed.html?vl=${encodeURIComponent(window.location.href)}`;
       
       container.innerHTML = `
         <div class="rounded-2xl border border-red-900/40 bg-gradient-to-b from-red-950/30 via-black/80 to-black p-4 shadow-neon-mobile sm:rounded-3xl sm:p-6 sm:shadow-neon-lg md:p-8">
@@ -381,11 +380,12 @@
           
           <div class="mb-4 overflow-hidden rounded-xl border border-red-900/30 bg-black p-1.5 sm:mb-6 sm:rounded-2xl sm:p-2">
             <div id="ifr_wrapper" class="relative w-full overflow-hidden rounded-xl bg-red-950/20" style="padding-top: 178.22%;">
+              <!-- Loader do Player -->
               <div id="player-loader" class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/50">
                 <div class="h-10 w-10 animate-spin rounded-full border-2 border-neon-red/30 border-t-neon-red"></div>
                 <p class="text-xs text-white/50">Preparando video...</p>
               </div>
-              <iframe id="video-iframe" src="${srcUrl}" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" referrerpolicy="origin" class="absolute left-0 top-0 h-full w-full" onload="document.getElementById('player-loader').classList.add('hidden')"></iframe>
+              <video id="video-player" src="vsl.mp4" playsinline autoplay muted controls class="absolute left-0 top-0 h-full w-full object-cover rounded-xl" onloadstart="document.getElementById('player-loader').classList.add('hidden')"></video>
             </div>
           </div>
           
@@ -398,19 +398,17 @@
         </div>
       `;
 
+      // Simulação / Fail-safe: Mostra botão após 15 segundos caso o evento de término do player não chegue ou o player falhe.
+      // O usuário pode pular em ambientes de teste.
       setTimeout(() => {
         showVideoCTA();
-      }, 15000); // Fail-safe 15 segundos
+      }, 15000); // 15 segundos para fins de experiência fluida, caso o player não carregue ou termine.
 
-      window.addEventListener("message", handleSmartplayerMessage);
-    }
-
-    function handleSmartplayerMessage(e) {
-      if (e.origin.includes("converteai.net")) {
-        const dataStr = typeof e.data === 'string' ? e.data.toLowerCase() : JSON.stringify(e.data).toLowerCase();
-        if (dataStr.includes("ended") || dataStr.includes("video_end") || dataStr.includes("playback_end") || dataStr.includes('"percent":100')) {
+      const vp = document.getElementById("video-player");
+      if (vp) {
+        vp.addEventListener("ended", () => {
           showVideoCTA();
-        }
+        });
       }
     }
 
